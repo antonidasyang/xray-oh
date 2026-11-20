@@ -7,7 +7,8 @@
 #     a Go 1.27 with the openharmony port and arm64 TLSDESC. Stock Go cannot build
 #     a c-shared library that musl will dlopen.
 #   - DevEco Studio's OHOS NDK clang (DEVECO_SDK_HOME / OHOS_NATIVE_HOME).
-#   - xray-core checked out next to this repo on its harmonyos branch (golib/go.mod replace).
+#   - Xray-core: by default the fork commit in golib/go.mod. Set XRAY_CORE_DIR to a local
+#     checkout (harmonyos branch) to build that instead, through a temporary go.work.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -47,7 +48,20 @@ cat > "${WORK_DIR}/libxray.map" <<'MAP'
 };
 MAP
 
-COMMIT="$(git -C "${ROOT_DIR}/../xray-core" rev-parse --short=7 HEAD 2>/dev/null || echo unknown)"
+if [[ -n "${XRAY_CORE_DIR:-}" ]]; then
+  XRAY_CORE_DIR="$(cd "${XRAY_CORE_DIR}" && pwd)"
+  printf 'go 1.27\n\nuse %s\n\nreplace github.com/xtls/xray-core => %s\n' \
+    "${ROOT_DIR}/golib" "${XRAY_CORE_DIR}" > "${WORK_DIR}/go.work"
+  export GOWORK="${WORK_DIR}/go.work"
+  COMMIT="$(git -C "${XRAY_CORE_DIR}" rev-parse --short=7 HEAD 2>/dev/null || echo local)"
+  echo "Using local Xray-core at ${XRAY_CORE_DIR} (${COMMIT})"
+else
+  export GOWORK=off
+  # The fork's pseudo-version ends in the 12-character commit hash.
+  PSEUDO="$(sed -n 's#^replace github.com/xtls/xray-core => .* \(v[^ ]*\)$#\1#p' "${ROOT_DIR}/golib/go.mod")"
+  COMMIT="${PSEUDO: -12:7}"
+  echo "Using Xray-core ${PSEUDO} from golib/go.mod"
+fi
 
 cd "${ROOT_DIR}/golib"
 export PATH="${OHOS_GO}/bin:${PATH}"

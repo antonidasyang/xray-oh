@@ -1,3 +1,5 @@
+github.com/antonidasyang/Xray-core v0.0.0-20261120020930-f604358c8746 h1:g4ABfddoQZ5j+muWJrbXQ0mlaUVUDJ1Xpie3xEn4OcA=
+github.com/antonidasyang/Xray-core v0.0.0-20261120020930-f604358c8746/go.mod h1:LfoDNJ8dMPeSXRVxoW7oRod+ZG0h4F1vxIY2N2spT18=
 github.com/apernet/quic-go v0.63.1-0.20261004180939-a10df75c260c h1:cxK8qTA0YCsj68A7zLYDCfPgMTOyt3ePkHh+oXEmYU0=
 github.com/apernet/quic-go v0.63.1-0.20261004180939-a10df75c260c/go.mod h1:J7UZVOMF2M1LiE3iiUZWPuy8YCPAcLJOwVURrfJCvc0=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=

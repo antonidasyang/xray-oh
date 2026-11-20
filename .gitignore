@@ -13,7 +13,6 @@ local.properties
 # Native build output (scripts/build_libxray.sh)
 .build-golib/
 entry/libs/
-entry/src/main/cpp/include/libxray.h
 
 # Signing material
 *.p12

@@ -54,5 +54,6 @@ require (
 	lukechampine.com/blake3 v1.4.1 // indirect
 )
 
-// The HarmonyOS port lives on the harmonyos branch of the local xray-core checkout.
-replace github.com/xtls/xray-core => ../../xray-core
+// Xray-core with the openharmony build fixes: harmonyos branch of the fork.
+// scripts/build_libxray.sh with XRAY_CORE_DIR=<checkout> builds a local tree instead.
+replace github.com/xtls/xray-core => github.com/antonidasyang/Xray-core v0.0.0-20261120020930-f604358c8746

@@ -11,7 +11,7 @@ Xray-core 的鸿蒙 VPN 客户端（2in1 PC / 手机 / 平板）。系统 VPN �
    - 部分模拟器镜像没有 VPN 授权组件，建议用真机。
 4. **连接**：在应用里粘贴一份完整的 Xray JSON 配置，点"连接"。首次连接时系统会弹出 VPN 授权。日志显示在下方。
 
-`entry/libs/arm64-v8a/libxray.so` 已经编好，在 DevEco 里直接编译就行。只有改了 Go 代码或 Xray 源码才需要重新编译它（见下文）。
+不需要 Go 工具链：首次编译时，CMake 会从 [Release v0.1.0](https://github.com/antonidasyang/xray-oh/releases/tag/v0.1.0) 下载预编译的 `libxray.so` 到 `entry/libs/arm64-v8a/`，并校验 SHA256。只有改了 Go 代码或 Xray 源码才需要自己编（见下文）。
 
 ## 配置
 
@@ -66,19 +66,29 @@ Xray-core 的鸿蒙 VPN 客户端（2in1 PC / 手机 / 平板）。系统 VPN �
 ## 重新编译 libxray.so
 
 ```bash
-bash scripts/build_libxray.sh
+bash scripts/build_libxray.sh                              # 用 golib/go.mod 里的 Xray-core fork
+XRAY_CORE_DIR=../xray-core bash scripts/build_libxray.sh   # 用本地 Xray-core 源码（通过临时 go.work）
 ```
 
-依赖以下几样：
+产物会覆盖 `entry/libs/arm64-v8a/libxray.so`。目录里已有库时，CMake 直接使用，不再下载。脚本会检查产物里有 `R_AARCH64_TLSDESC`，并且只导出 `Xray*` 符号。
 
-- **鸿蒙版 Go 1.27 工具链**：放在 `~/ohos-toolchain/ohos-go-1.27.4`，可以用 `OHOS_GO` 覆盖。官方 Go 编出的 c-shared 库在鸿蒙（musl）上加载会崩，必须用带 `openharmony` 端口和 arm64 TLSDESC 的版本。
-  - 这个工具链是把第三方分支 [star4277/ohos-go](https://github.com/star4277/ohos-go) v1.26.5-beta1 的补丁三方合并到官方 go1.27.4 上得到的。
-  - 合并记录在 `~/ohos-toolchain/port`（git 仓库，分支 `ohos-1.27.4`）。
-  - 重新生成工具链：`cd ~/ohos-toolchain/port && git archive ohos-1.27.4 | tar -x -C <目标目录>`，然后在 `<目标目录>/src` 下执行 `GOROOT_BOOTSTRAP=<任意 go1.24.6+> bash make.bash`。
-- **DevEco 自带的 OHOS clang**。
-- **同级目录 `../xray-core` 的 `harmonyos` 分支**（`golib/go.mod` 用 `replace` 指向它）。这个分支让鸿蒙在 TUN 和进程查找上走 Android 的路子：TUN fd 由外部传入，不做 `TUNGETIFF` 检查。
+**Xray-core**：用的是 [antonidasyang/Xray-core](https://github.com/antonidasyang/Xray-core/tree/harmonyos) 的 `harmonyos` 分支，`golib/go.mod` 通过 `replace` 指向这个分支的某个提交。这个分支让鸿蒙在 TUN 和进程查找上走 Android 的路子：TUN fd 由外部传入，不做 `TUNGETIFF` 检查。换提交的方法：
 
-脚本会检查产物里有 `R_AARCH64_TLSDESC`，并且只导出 `Xray*` 符号。
+```bash
+cd golib && go mod edit -replace=github.com/xtls/xray-core=github.com/antonidasyang/Xray-core@<commit> && go mod tidy
+```
+
+**鸿蒙版 Go 1.27 工具链**：放在 `~/ohos-toolchain/ohos-go-1.27.4`，可以用 `OHOS_GO` 覆盖。官方 Go 编出的 c-shared 库在鸿蒙（musl）上加载会崩，必须用带 `openharmony` 端口和 arm64 TLSDESC 的版本。
+- 这个工具链是把第三方分支 [star4277/ohos-go](https://github.com/star4277/ohos-go) v1.26.5-beta1 的补丁三方合并到官方 go1.27.4 上得到的。
+- 合并记录在 `~/ohos-toolchain/port`（git 仓库，分支 `ohos-1.27.4`）。
+- 重新生成工具链：`cd ~/ohos-toolchain/port && git archive ohos-1.27.4 | tar -x -C <目标目录>`，然后在 `<目标目录>/src` 下执行 `GOROOT_BOOTSTRAP=<任意 go1.24.6+> bash make.bash`。
+
+**C 编译器**：用 DevEco 自带的 OHOS clang。
+
+**发布新的预编译库**：
+1. 把 fork 版本的构建产物上传到一个新的 Release；
+2. 修改 `entry/src/main/cpp/CMakeLists.txt` 里的 `LIBXRAY_RELEASE` 和 `LIBXRAY_SHA256`；
+3. 如果 C 接口有变，同时提交新的 `entry/src/main/cpp/include/libxray.h`。
 
 ## 已验证与未验证
 
