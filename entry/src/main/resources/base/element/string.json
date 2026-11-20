@@ -1,0 +1,8 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "Xray VPN client" },
+    { "name": "entry_ability_desc", "value": "Xray VPN client" },
+    { "name": "vpn_service_label", "value": "Xray tunnel" },
+    { "name": "vpn_service_desc", "value": "Runs Xray-core behind the system VPN" }
+  ]
+}

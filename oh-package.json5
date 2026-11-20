@@ -1,0 +1,11 @@
+{
+  "modelVersion": "6.1.0",
+  "name": "xray-oh",
+  "version": "0.1.0",
+  "description": "Xray-core VPN client for HarmonyOS (phone + 2-in-1 PC).",
+  "license": "MPL-2.0",
+  "main": "",
+  "author": "",
+  "dependencies": {},
+  "devDependencies": {}
+}

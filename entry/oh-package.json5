@@ -1,0 +1,11 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Xray VPN client for HarmonyOS",
+  "main": "",
+  "author": "",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "libxraybridge.so": "file:./src/main/cpp/types/libxraybridge"
+  }
+}
